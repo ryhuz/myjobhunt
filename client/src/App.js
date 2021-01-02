@@ -1,21 +1,36 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { successfulLogin, successfulLogout, checkLogin } from './app/loginSlice'
+import { Route, BrowserRouter } from 'react-router-dom';
+import LogIn from './Account/LogIn';
+import Register from './Account/Register';
+import { checkLogin } from './app/loginSlice'
 import Dashboard from "./dashboard/Dashboard";
+import NavbarHolder from './NavBar/NavbarHolder';
 
 function App() {
-  // const [state, setstate] = useState(initialState)
+  const [login, setLogin] = useState(false)
+  const [register, setRegister] = useState(false)
+  function modalSetting(modal, turnOn) {
+    if (modal === 'login') {
+      setLogin(turnOn);
+    } else {
+      setRegister(turnOn);
+    }
+  }
+
   const loginState = useSelector(checkLogin)
   const dispatch = useDispatch();
-  
-  
+
   console.log(loginState)
   return (
-    <>
-      <Dashboard />
-      <button onClick={() => dispatch(successfulLogin({name:'Shawn', id:'some hash'}))}>Log In</button>
-      <button onClick={() => dispatch(successfulLogout())}>Log Out</button>
-    </>
+    <BrowserRouter>
+      <NavbarHolder modalSetting={modalSetting} />
+      <Route path="/">
+        <Dashboard />
+      </Route>
+      <LogIn display={login} setDisplay={modalSetting} />
+      <Register display={register} setDisplay={modalSetting} />
+    </BrowserRouter>
   )
 }
 
