@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap'
 import { Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup';
+import { axiosBase } from '../https_requests/requests'
 
 function Register({ display, setDisplay }) {
     const existing = ['test', '123123123', 'ryhuz']; // to remove once username check with node.js is done
@@ -39,6 +40,15 @@ function Register({ display, setDisplay }) {
         firstname: Yup.string().required().min(2),
         lastname: Yup.string().required().min(2),
     }
+    async function register(form) {
+        try{
+            let register = await axiosBase.post('register', form);
+            console.log(register)
+        }catch(e){
+            console.log(e.response)
+        }
+        
+    }
     return (
         <Modal centered size='lg' show={display} onHide={() => setDisplay(thisModal, false)}>
             <Modal.Header closeButton>
@@ -48,7 +58,7 @@ function Register({ display, setDisplay }) {
 
                 <Formik initialValues={initialForm} validationSchema={Yup.object(validation)}
                     onSubmit={(values) => {
-                        console.log(values)
+                        register(values);
                     }} >
                     {({
                         values,
