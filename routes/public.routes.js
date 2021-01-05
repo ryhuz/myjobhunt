@@ -2,6 +2,17 @@ const router = require("express").Router();
 const jwt = require("jsonwebtoken");
 const bcrpyt = require("bcrypt");
 const User = require('../models/user.model');
+const passport = require('../config/passportConfig')
+
+router.put("/checkexist", async (req, res) => {
+    let { username } = req.body
+    let exists = await User.find({ username })
+    if (exists.length) {
+        return res.status(200).json({ exists: true })
+    } else {
+        return res.status(200).json({ exists: false })
+    }
+})
 
 router.post("/register", async (req, res) => {
     let { username, password, email,
@@ -31,4 +42,49 @@ router.post("/register", async (req, res) => {
     }
 })
 
+router.post("/login", function (req, res, next) {
+    passport.authenticate('local', function (err, user, info) {
+        // console.log('----------')
+        // console.log(err)
+        // console.log(user)
+        // console.log(info)
+        if (err) { return next(err); }
+        if (info.status === 'success') {
+            req.login(user, { session: false }, err => {
+                if (err) { return next(err); }
+
+                const body = { ref: user._id };
+                const token = jwt.sign({ data: body }, process.env.SECRET, { expiresIn: 84600 })
+                return res.status(200).json({ status: info.status, token: token })
+            })
+        } else {
+            return res.status(401).json({ invalid: info.invalid })
+        }
+
+    })(req, res, next);
+});
+
+router.get("/verify_token", function (req, res, next) {
+    passport.authenticate('jwt', function (err, user, info) {
+        
+        console.log('----------')
+        console.log(err)
+        console.log(user)
+        console.log(info)
+        // console.log(req)
+        // if (err) { return next(err); }
+        // if (info.status === 'success') {
+        //     req.login(user, { session: false }, err => {
+        //         if (err) { return next(err); }
+
+        //         const body = { ref: user._id };
+        //         const token = jwt.sign({ data: body }, process.env.SECRET, { expiresIn: 84600 })
+        //         return res.status(200).json({ status: info.status, token: token })
+        //     })
+        // } else {
+        //     return res.status(401).json({ invalid: info.invalid })
+        // }
+
+    })(req, res, next);
+});
 module.exports = router;

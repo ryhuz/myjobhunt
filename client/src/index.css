@@ -12,7 +12,7 @@ code {
     monospace;
 }
 
-#sidebar {
+#sidebar, #home {
   height: 100vh;
 }
 /* Get a proper loading spinner */

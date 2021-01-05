@@ -1,18 +1,35 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap'
 import { Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup';
-import { axiosBase } from '../https_requests/requests'
+import { axiosBase } from '../../https_requests/requests'
+import debounce from 'lodash.debounce';
 
-function Register({ display, setDisplay }) {
-    const existing = ['test', '123123123', 'ryhuz']; // to remove once username check with node.js is done
-    const [checkingUsername, setCheckingUsername] = useState(false)
+function Register({ display, setDisplay, changeModal }) {
     const thisModal = 'register';
     const otherModal = 'login';
-    function changeModal() {
-        setDisplay(thisModal, false)
-        setDisplay(otherModal, true)
+
+    async function checkExists(username) {
+        try {
+            let check = await axiosBase.put('checkexist', { username });
+            if (check.data.exists) {
+                setUsernameExists(true);
+                setCheckingUsername(false);
+                return true;
+            } else {
+                setUsernameExists(false);
+                setCheckingUsername(false);
+                return false;
+            }
+        } catch (e) {
+            console.log(e.response);
+            setCheckingUsername(false);
+        }
     }
+    const debouncedCheck = useCallback(debounce((username, err) => checkExists(username, err), 800), []);
+
+    const [checkingUsername, setCheckingUsername] = useState(false);
+    const [usernameExists, setUsernameExists] = useState(false);
     const initialForm = {
         username: "",
         password: "",
@@ -22,18 +39,7 @@ function Register({ display, setDisplay }) {
         lastname: "",
     }
     const validation = {
-        username: Yup.string().required().test('username-exists', 'username already taken', function (value) {
-            setCheckingUsername(true);
-            /* to replace with async check with node.js */
-            if (existing.includes(value)) {
-                setCheckingUsername(false);
-                return false;
-            } else {
-                setCheckingUsername(false);
-                return true;
-            }
-            /* ---------------------------------------- */
-        }),
+        username: Yup.string().required().min(4),
         password: Yup.string().required().min(8),
         confirmPassword: Yup.string().required('passwords must match').oneOf([Yup.ref('password'), null], 'passwords must match'),
         email: Yup.string().required().email(),
@@ -41,21 +47,20 @@ function Register({ display, setDisplay }) {
         lastname: Yup.string().required().min(2),
     }
     async function register(form) {
-        try{
+        try {
             let register = await axiosBase.post('register', form);
             console.log(register)
-        }catch(e){
+        } catch (e) {
             console.log(e.response)
         }
-        
     }
+
     return (
         <Modal centered size='lg' show={display} onHide={() => setDisplay(thisModal, false)}>
             <Modal.Header closeButton>
                 <Modal.Title className="ml-auto">Register Account</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-
                 <Formik initialValues={initialForm} validationSchema={Yup.object(validation)}
                     onSubmit={(values) => {
                         register(values);
@@ -75,11 +80,20 @@ function Register({ display, setDisplay }) {
                                     <Form.Group controlId="register.username">
                                         <Form.Label>username</Form.Label>
                                         <Form.Control type="text" name="username" value={values.username} className={`${checkingUsername ? 'is-loading' : ''}`}
-                                            isInvalid={touched.username && errors.username && !checkingUsername} isValid={touched.username && !errors.username && !checkingUsername}
-                                            onChange={handleChange} onBlur={handleBlur} />
+                                            isInvalid={(touched.username && errors.username && !checkingUsername) || usernameExists} isValid={touched.username && !errors.username && !checkingUsername && !usernameExists}
+                                            onChange={e => {
+                                                handleChange(e);
+                                                setUsernameExists(false);
+                                                if (e.target.value.length > 3) {
+                                                    setCheckingUsername(true);
+                                                    debouncedCheck(e.target.value);
+                                                }
+                                            }} onBlur={handleBlur} />
                                         {!checkingUsername &&
                                             <ErrorMessage name="username" component="div" className="text-danger" />
                                         }
+                                        {usernameExists &&
+                                        <div className="text-danger">username already exists</div>}
                                     </Form.Group>
                                     <Form.Group controlId="register.password">
                                         <Form.Label>password</Form.Label>
@@ -126,7 +140,7 @@ function Register({ display, setDisplay }) {
                                 </Form>
                             </Col>
                             <Col md={8} className="my-3">
-                                <Button variant="secondary" onClick={handleSubmit}>
+                                <Button variant="secondary" onClick={handleSubmit} disabled={isSubmitting}>
                                     Register
                                 </Button>
                             </Col>
@@ -136,7 +150,7 @@ function Register({ display, setDisplay }) {
             </Modal.Body>
             <Modal.Footer>
                 <div>
-                    Already have an account? Log in <span onClick={changeModal}>here</span>
+                    Already have an account? Log in <span onClick={() => changeModal(thisModal, otherModal)}>here</span>
                 </div>
             </Modal.Footer>
         </Modal >
