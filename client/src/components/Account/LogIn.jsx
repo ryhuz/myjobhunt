@@ -6,6 +6,7 @@ import { axiosBase } from '../../https_requests/requests'
 import { Redirect } from 'react-router-dom';
 import { useDispatch } from 'react-redux'
 import { successfulLogin } from '../../app/loginSlice'
+import { storeUser } from '../../app/userDetailSlice'
 import jwt_decode from "jwt-decode";
 
 function LogIn({ display, setDisplay, changeModal }) {
@@ -24,15 +25,19 @@ function LogIn({ display, setDisplay, changeModal }) {
         username: Yup.string().required(),
         password: Yup.string().required().min(8),
     }
-    async function login(form) {
+    async function login(form, setSubmitting) {
         try {
             let loginAttempt = await axiosBase.post('/login', form)
             setLoginErr("")
             let token = loginAttempt.data.token
-            localStorage.setItem('mjh_user_token', loginAttempt.data.token);
+            localStorage.setItem('mjh_user_token', token);
             let deToken = jwt_decode(token)
+
+            dispatch(storeUser(loginAttempt.data.user))
             dispatch(successfulLogin(deToken.data.ref))
+
             setDisplay(thisModal, false)
+            setSubmitting(false);
             setLoggedIn(true);
         } catch (e) {
             // console.log(e)
@@ -42,6 +47,7 @@ function LogIn({ display, setDisplay, changeModal }) {
             if (e.response.data.invalid === 'password') {
                 setLoginErr("Invalid password")
             }
+            setSubmitting(false);
         }
     }
     if (loggedIn) { return <Redirect to="/dashboard" /> }
@@ -52,8 +58,8 @@ function LogIn({ display, setDisplay, changeModal }) {
             </Modal.Header>
             <Modal.Body>
                 <Formik initialValues={initialForm} validationSchema={Yup.object(validation)}
-                    onSubmit={(values) => {
-                        login(values);
+                    onSubmit={(values, { setSubmitting }) => {
+                        login(values, setSubmitting);
                     }} >
                     {({
                         values,
@@ -93,7 +99,7 @@ function LogIn({ display, setDisplay, changeModal }) {
                                 </Form>
                             </Col>
                             <Col md={8} className="my-3">
-                                <Button variant="secondary" type="submit" onClick={handleSubmit} /*disabled={isSubmitting}*/>
+                                <Button variant="secondary" type="submit" onClick={handleSubmit} disabled={isSubmitting}>
                                     Log In
                                 </Button>
                             </Col>

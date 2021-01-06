@@ -1,13 +1,20 @@
 import React, { useState, useCallback } from 'react'
+import { useDispatch } from 'react-redux'
+import { Redirect } from 'react-router-dom';
+import { successfulLogin } from '../../app/loginSlice'
+import { storeUser } from '../../app/userDetailSlice'
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap'
 import { Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup';
 import { axiosBase } from '../../https_requests/requests'
 import debounce from 'lodash.debounce';
+import jwt_decode from "jwt-decode";
 
 function Register({ display, setDisplay, changeModal }) {
+    const dispatch = useDispatch();
     const thisModal = 'register';
     const otherModal = 'login';
+    const [loggedIn, setLoggedIn] = useState(false)
 
     async function checkExists(username) {
         try {
@@ -46,15 +53,32 @@ function Register({ display, setDisplay, changeModal }) {
         firstname: Yup.string().required().min(2),
         lastname: Yup.string().required().min(2),
     }
-    async function register(form) {
+    async function login(form, setSubmitting) {
+        try {
+            let loginAttempt = await axiosBase.post('/login', form)
+            let token = loginAttempt.data.token
+            localStorage.setItem('mjh_user_token', token);
+            let deToken = jwt_decode(token)
+
+            dispatch(storeUser(loginAttempt.data.user))
+            dispatch(successfulLogin(deToken.data.ref))
+
+            setDisplay(thisModal, false)
+            setSubmitting(false);
+            setLoggedIn(true);
+        } catch (e) {
+        }
+    }
+    async function register(form, setSubmitting) {
         try {
             let register = await axiosBase.post('register', form);
-            console.log(register)
+            login(form, setSubmitting);
         } catch (e) {
             console.log(e.response)
         }
     }
 
+    if (loggedIn) { return <Redirect to="/dashboard" /> }
     return (
         <Modal centered size='lg' show={display} onHide={() => setDisplay(thisModal, false)}>
             <Modal.Header closeButton>
@@ -62,8 +86,8 @@ function Register({ display, setDisplay, changeModal }) {
             </Modal.Header>
             <Modal.Body>
                 <Formik initialValues={initialForm} validationSchema={Yup.object(validation)}
-                    onSubmit={(values) => {
-                        register(values);
+                    onSubmit={(values, { setSubmitting }) => {
+                        register(values, setSubmitting);
                     }} >
                     {({
                         values,
@@ -93,7 +117,7 @@ function Register({ display, setDisplay, changeModal }) {
                                             <ErrorMessage name="username" component="div" className="text-danger" />
                                         }
                                         {usernameExists &&
-                                        <div className="text-danger">username already exists</div>}
+                                            <div className="text-danger">username already exists</div>}
                                     </Form.Group>
                                     <Form.Group controlId="register.password">
                                         <Form.Label>password</Form.Label>

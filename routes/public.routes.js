@@ -48,10 +48,15 @@ router.post("/login", function (req, res, next) {
         if (info.status === 'success') {
             req.login(user, { session: false }, err => {
                 if (err) { return next(err); }
-
+                let userDetails = {
+                    username: user.username,
+                    email: user.email,
+                    firstname: user.firstname,
+                    lastname: user.lastname,
+                }
                 const body = { ref: user._id };
                 const token = jwt.sign({ data: body }, process.env.SECRET, { expiresIn: 846000 })
-                return res.status(200).json({ status: info.status, token: token })
+                return res.status(200).json({ status: info.status, token: token, user: userDetails })
             })
         } else {
             return res.status(401).json({ invalid: info.invalid })
@@ -67,7 +72,13 @@ router.get("/verify_token", function (req, res, next) {
             return res.status(401).json({ invalid: 'expired' })
         }
         if (info.status === 'success') {
-            return res.status(200).json({ status: info.status })
+            let userDetails = {
+                username: user.username,
+                email: user.email,
+                firstname: user.firstname,
+                lastname: user.lastname,
+            }
+            return res.status(200).json({ status: info.status, user: userDetails })
         } else {
             return res.status(401).json({ invalid: info.invalid })
         }

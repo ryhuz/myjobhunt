@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Route, BrowserRouter } from 'react-router-dom';
-import { checkLogin } from './app/loginSlice'
+import { axiosBase } from './https_requests/requests'
+import jwtDecode from 'jwt-decode';
+
+import { successfulLogin, checkedLoginStatus, checkLogin } from './app/loginSlice'
+import { retrieveUser } from './app/userDetailSlice'
+
 import NavbarHolder from './components/NavBar/NavbarHolder';
 import Home from './components/Home/Home';
 import Dashboard from './components/dashboard/Dashboard';
-import { successfulLogin, checkedLoginStatus } from './app/loginSlice'
-import { axiosBase } from './https_requests/requests'
-import jwtDecode from 'jwt-decode';
 import PrivateRoute from './components/PrivateRoute';
 import LogOut from './components/Account/LogOut';
 
@@ -28,22 +30,22 @@ function App() {
   }
 
   useEffect(() => {
+    console.log('app useeffect')
     async function checkToken(token) {
       try {
-        await axiosBase.get('verify_token', {
+        let check = await axiosBase.get('verify_token', {
           headers: {
             token: token,
           }
         })
-        // console.log(check)
         let deToken = jwtDecode(token);
+        dispatch(storeUser(check.data.user))
         dispatch(successfulLogin(deToken.data.ref));
       } catch (e) {
         // console.log(e.response)
         if (e.response.data.invalid === 'expired' || e.response.data.invalid === 'invalid') {
           localStorage.removeItem('mjh_user_token')
           dispatch(checkedLoginStatus());
-          console.log(loginState)
         }
       }
     }
@@ -54,7 +56,6 @@ function App() {
     }
   }, [])
 
-  console.log(loginState)
   return (
     <BrowserRouter>
       <NavbarHolder modalSetting={modalSetting} />

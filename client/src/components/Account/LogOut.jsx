@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react'
 import { Redirect } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch, batch } from 'react-redux'
 import { successfulLogout, checkLogin } from '../../app/loginSlice'
-import { axiosBase } from '../../https_requests/requests'
+import { logoutUser } from '../../app/userDetailSlice'
 
 function LogOut() {
     const loginState = useSelector(checkLogin);
     const dispatch = useDispatch();
     localStorage.removeItem('mjh_user_token');
 
-
+    console.log(loginState)
     if (!loginState.login) {
         return <Redirect to="/" />
     }
     setTimeout(() => {
+        dispatch(logoutUser())
         dispatch(successfulLogout());
     }, 1700);
 
