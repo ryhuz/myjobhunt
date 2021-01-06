@@ -5,7 +5,7 @@ import { axiosBase } from './https_requests/requests'
 import jwtDecode from 'jwt-decode';
 
 import { successfulLogin, checkedLoginStatus, checkLogin } from './app/loginSlice'
-import { retrieveUser } from './app/userDetailSlice'
+import { storeUser } from './app/userDetailSlice'
 
 import NavbarHolder from './components/NavBar/NavbarHolder';
 import Home from './components/Home/Home';

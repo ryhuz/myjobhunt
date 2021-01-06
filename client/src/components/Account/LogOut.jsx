@@ -9,7 +9,6 @@ function LogOut() {
     const dispatch = useDispatch();
     localStorage.removeItem('mjh_user_token');
 
-    console.log(loginState)
     if (!loginState.login) {
         return <Redirect to="/" />
     }

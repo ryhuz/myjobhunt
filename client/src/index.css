@@ -13,7 +13,7 @@ code {
 }
 
 #sidebar, #home {
-  height: 100vh;
+  height: calc(100vh - 56px);
 }
 /* Get a proper loading spinner */
 .form-control.is-loading {

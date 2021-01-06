@@ -15,28 +15,29 @@ function Register({ display, setDisplay, changeModal }) {
     const thisModal = 'register';
     const otherModal = 'login';
     const [loggedIn, setLoggedIn] = useState(false)
+    const [checkingExists, setCheckingExists] = useState({ username: false, email: false });
+    const [exists, setExists] = useState({ username: false, email: false });
 
-    async function checkExists(username) {
+    async function checkExists(data, type) {
         try {
-            let check = await axiosBase.put('checkexist', { username });
+            let check = await axiosBase.put('checkexist', { data, type });
             if (check.data.exists) {
-                setUsernameExists(true);
-                setCheckingUsername(false);
+                setExists({ ...exists, [type]: true, });
+
+                setCheckingExists({ ...checkingExists, [type]: true, });
                 return true;
             } else {
-                setUsernameExists(false);
-                setCheckingUsername(false);
+                setExists({ ...exists, [type]: false, });
+                setCheckingExists({ ...checkingExists, [type]: false, });
                 return false;
             }
         } catch (e) {
             console.log(e.response);
-            setCheckingUsername(false);
+            setCheckingExists({ ...exists, [type]: false, });
         }
     }
-    const debouncedCheck = useCallback(debounce((username, err) => checkExists(username, err), 800), []);
+    const debouncedCheck = useCallback(debounce((username, type) => checkExists(username, type), 800), []);
 
-    const [checkingUsername, setCheckingUsername] = useState(false);
-    const [usernameExists, setUsernameExists] = useState(false);
     const initialForm = {
         username: "",
         password: "",
@@ -71,7 +72,7 @@ function Register({ display, setDisplay, changeModal }) {
     }
     async function register(form, setSubmitting) {
         try {
-            let register = await axiosBase.post('register', form);
+            await axiosBase.post('register', form);
             login(form, setSubmitting);
         } catch (e) {
             console.log(e.response)
@@ -103,20 +104,26 @@ function Register({ display, setDisplay, changeModal }) {
                                 <Form>
                                     <Form.Group controlId="register.username">
                                         <Form.Label>username</Form.Label>
-                                        <Form.Control type="text" name="username" value={values.username} className={`${checkingUsername ? 'is-loading' : ''}`}
-                                            isInvalid={(touched.username && errors.username && !checkingUsername) || usernameExists} isValid={touched.username && !errors.username && !checkingUsername && !usernameExists}
+                                        <Form.Control type="text" name="username" value={values.username} className={`${checkingExists.username ? 'is-loading' : ''}`}
+                                            isInvalid={(touched.username && errors.username && !checkingExists.username) || exists.username} isValid={touched.username && !errors.username && !checkingExists.username && !exists.username}
                                             onChange={e => {
                                                 handleChange(e);
-                                                setUsernameExists(false);
+                                                setExists({
+                                                    ...exists,
+                                                    username: false,
+                                                });
                                                 if (e.target.value.length > 3) {
-                                                    setCheckingUsername(true);
-                                                    debouncedCheck(e.target.value);
+                                                    setCheckingExists({
+                                                        ...checkingExists,
+                                                        username: true,
+                                                    })
+                                                    debouncedCheck(e.target.value, 'username');
                                                 }
                                             }} onBlur={handleBlur} />
-                                        {!checkingUsername &&
+                                        {!checkingExists.username &&
                                             <ErrorMessage name="username" component="div" className="text-danger" />
                                         }
-                                        {usernameExists &&
+                                        {exists.username &&
                                             <div className="text-danger">username already exists</div>}
                                     </Form.Group>
                                     <Form.Group controlId="register.password">
@@ -135,10 +142,27 @@ function Register({ display, setDisplay, changeModal }) {
                                     </Form.Group>
                                     <Form.Group controlId="register.email">
                                         <Form.Label>email address</Form.Label>
-                                        <Form.Control type="text" name="email" value={values.email}
-                                            isInvalid={touched.email && errors.email} isValid={touched.email && !errors.email}
-                                            onChange={handleChange} onBlur={handleBlur} />
-                                        <ErrorMessage name="email" component="div" className="text-danger" />
+                                        <Form.Control type="text" name="email" value={values.email} className={`${checkingExists.username ? 'is-loading' : ''}`}
+                                            isInvalid={(touched.email && errors.email && !checkingExists.email) || exists.email} isValid={touched.email && !errors.email && !checkingExists.email && !exists.email}
+                                            onChange={e => {
+                                                handleChange(e);
+                                                setExists({
+                                                    ...exists,
+                                                    email: false,
+                                                });
+                                                if (e.target.value.length > 3) {
+                                                    setCheckingExists({
+                                                        ...checkingExists,
+                                                        email: true,
+                                                    })
+                                                    debouncedCheck(e.target.value, 'email');
+                                                }
+                                            }} onBlur={handleBlur} />
+                                        {!checkingExists.email &&
+                                            <ErrorMessage name="email" component="div" className="text-danger" />
+                                        }
+                                        {exists.email &&
+                                            <div className="text-danger">email already exists</div>}
                                     </Form.Group>
                                     <Form.Row>
                                         <Col>

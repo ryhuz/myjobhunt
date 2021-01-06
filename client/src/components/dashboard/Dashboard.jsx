@@ -1,7 +1,8 @@
 import React from 'react'
 import { Col, Container, Jumbotron, Row } from 'react-bootstrap'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { getName } from '../../app/userDetailSlice'
+import SideBar from './SideBar';
 
 
 function Dashboard() {
@@ -10,15 +11,15 @@ function Dashboard() {
     console.log(name);
     return (
         <Row noGutters='true'>
-            <Col md={2} className="bg-primary" id='sidebar'>
-                Side Nav Bar
+            <Col md={2}>
+                <SideBar />
             </Col>
             <Col>
                 <Jumbotron>
                     <h2>Welcome back {name.firstname}</h2>
-                    Dashboard
                 </Jumbotron>
                 <Container>
+                    <h3>Your Current Hunts</h3>
                     <Row md={4}>
                         <Col>Test</Col>
                         <Col>Test</Col>
@@ -45,7 +46,34 @@ function Dashboard() {
                         <Col>Test</Col>
                         <Col>Test</Col>
                         <Col>Test</Col>
-
+                    </Row>
+                    <h3>Past Hunts</h3>
+                    <Row md={4}>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
+                        <Col>Test</Col>
                     </Row>
                 </Container>
             </Col>

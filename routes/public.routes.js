@@ -5,8 +5,9 @@ const User = require('../models/user.model');
 const passport = require('../config/passportConfig')
 
 router.put("/checkexist", async (req, res) => {
-    let { username } = req.body
-    let exists = await User.find({ username })
+    let { data, type } = req.body;
+    let search = { [type]: data }
+    let exists = await User.find(search);
     if (exists.length) {
         return res.status(200).json({ exists: true })
     } else {
