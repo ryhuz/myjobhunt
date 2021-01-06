@@ -9,6 +9,7 @@ import { successfulLogin, checkedLoginStatus } from './app/loginSlice'
 import { axiosBase } from './https_requests/requests'
 import jwtDecode from 'jwt-decode';
 import PrivateRoute from './components/PrivateRoute';
+import LogOut from './components/Account/LogOut';
 
 function App() {
   const loginState = useSelector(checkLogin)
@@ -62,6 +63,7 @@ function App() {
       </Route>
 
       <PrivateRoute path="/dashboard" component={Dashboard} />
+      <PrivateRoute path="/logout" component={LogOut} />
     </BrowserRouter>
   )
 }

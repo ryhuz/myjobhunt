@@ -4,7 +4,7 @@ import { Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup';
 import { axiosBase } from '../../https_requests/requests'
 import { Redirect } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { successfulLogin } from '../../app/loginSlice'
 import jwt_decode from "jwt-decode";
 
@@ -32,6 +32,7 @@ function LogIn({ display, setDisplay, changeModal }) {
             localStorage.setItem('mjh_user_token', loginAttempt.data.token);
             let deToken = jwt_decode(token)
             dispatch(successfulLogin(deToken.data.ref))
+            setDisplay(thisModal, false)
             setLoggedIn(true);
         } catch (e) {
             // console.log(e)

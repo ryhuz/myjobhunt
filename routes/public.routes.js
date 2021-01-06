@@ -63,7 +63,7 @@ router.post("/login", function (req, res, next) {
 router.get("/verify_token", function (req, res, next) {
     passport.authenticate('jwt', function (err, user, info) {
         if (err) { return next(err); }
-        if (info.name === 'TokenExpiredError'){
+        if (info.name === 'TokenExpiredError') {
             return res.status(401).json({ invalid: 'expired' })
         }
         if (info.status === 'success') {
@@ -73,5 +73,10 @@ router.get("/verify_token", function (req, res, next) {
         }
 
     })(req, res, next);
+});
+
+router.get('/logout', function (req, res) {
+    req.logout();
+    return res.status(200);
 });
 module.exports = router;

@@ -1,8 +1,10 @@
 import React from 'react'
-import { Nav, Navbar, NavDropdown } from 'react-bootstrap'
+import { NavLink } from 'react-router-dom';
+import { Button, Nav, Navbar, NavDropdown } from 'react-bootstrap'
 
 
 function NavBarLoggedIn() {
+
     return (
         <Navbar bg="light" expand="lg">
             <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
@@ -18,6 +20,7 @@ function NavBarLoggedIn() {
                         <NavDropdown.Divider />
                         <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
                     </NavDropdown>
+                    <NavLink to='/logout' className="btn mx-2" >Log Out</NavLink>
                 </Nav>
             </Navbar.Collapse>
         </Navbar>
