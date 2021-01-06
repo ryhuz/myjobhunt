@@ -6,6 +6,7 @@ import { axiosBase } from '../../https_requests/requests'
 import { Redirect } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux'
 import { successfulLogin } from '../../app/loginSlice'
+import jwt_decode from "jwt-decode";
 
 function LogIn({ display, setDisplay, changeModal }) {
     const dispatch = useDispatch();
@@ -29,11 +30,11 @@ function LogIn({ display, setDisplay, changeModal }) {
             setLoginErr("")
             let token = loginAttempt.data.token
             localStorage.setItem('mjh_user_token', loginAttempt.data.token);
-            dispatch(successfulLogin(token))
+            let deToken = jwt_decode(token)
+            dispatch(successfulLogin(deToken.data.ref))
             setLoggedIn(true);
-
         } catch (e) {
-            console.log(e)
+            // console.log(e)
             if (e.response.data.invalid === 'username') {
                 setLoginErr("Username does not exist")
             }

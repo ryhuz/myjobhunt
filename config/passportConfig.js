@@ -34,9 +34,9 @@ var opts = {
 passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
     User.findOne({ id: jwt_payload.sub }, function (err, user) {
         if (err) { return done(err, false); }
-        if (user) { return done(null, user); }
+        if (user) { return done(null, user, { status: 'success' }); }
         else {
-            return done(null, false);
+            return done(null, false, { status: 'failed', invalid: "invalid" });
             // or you could create a new account
         }
     });

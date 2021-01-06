@@ -5,9 +5,10 @@ import { checkLogin } from './app/loginSlice'
 import NavbarHolder from './components/NavBar/NavbarHolder';
 import Home from './components/Home/Home';
 import Dashboard from './components/dashboard/Dashboard';
-import jwt_decode from "jwt-decode";
-import { successfulLogin } from './app/loginSlice'
+import { successfulLogin, checkedLoginStatus } from './app/loginSlice'
 import { axiosBase } from './https_requests/requests'
+import jwtDecode from 'jwt-decode';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   const loginState = useSelector(checkLogin)
@@ -26,15 +27,29 @@ function App() {
   }
 
   useEffect(() => {
-    let enToken = localStorage.getItem('mjh_user_token');
-    if (enToken) {
-      let check = axiosBase.get('verify_token', {
-        headers: {
-          token: enToken,
+    async function checkToken(token) {
+      try {
+        await axiosBase.get('verify_token', {
+          headers: {
+            token: token,
+          }
+        })
+        // console.log(check)
+        let deToken = jwtDecode(token);
+        dispatch(successfulLogin(deToken.data.ref));
+      } catch (e) {
+        // console.log(e.response)
+        if (e.response.data.invalid === 'expired' || e.response.data.invalid === 'invalid') {
+          localStorage.removeItem('mjh_user_token')
+          dispatch(checkedLoginStatus());
+          console.log(loginState)
         }
-      })
-      console.log(check)
-      dispatch(successfulLogin(enToken))
+      }
+    }
+
+    let token = localStorage.getItem('mjh_user_token');
+    if (token) {
+      checkToken(token);
     }
   }, [])
 
@@ -45,9 +60,8 @@ function App() {
       <Route exact path="/">
         <Home login={login} register={register} setDisplay={modalSetting} />
       </Route>
-      <Route path="/dashboard">
-        <Dashboard />
-      </Route>
+
+      <PrivateRoute path="/dashboard" component={Dashboard} />
     </BrowserRouter>
   )
 }
