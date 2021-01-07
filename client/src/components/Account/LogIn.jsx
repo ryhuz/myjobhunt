@@ -2,12 +2,14 @@ import React, { useState } from 'react'
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap'
 import { Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup';
-import { axiosBase } from '../../https_requests/requests'
 import { Redirect } from 'react-router-dom';
 import { useDispatch } from 'react-redux'
+
 import { successfulLogin } from '../../app/loginSlice'
 import { storeUser } from '../../app/userDetailSlice'
-import jwt_decode from "jwt-decode";
+import { storeHunts, storeJobApps } from '../../app/huntSlice';
+
+import { login, getUserJobData } from './LoginFunctions';
 
 function LogIn({ display, setDisplay, changeModal }) {
     const dispatch = useDispatch();
@@ -25,31 +27,43 @@ function LogIn({ display, setDisplay, changeModal }) {
         username: Yup.string().required(),
         password: Yup.string().required().min(8),
     }
-    async function login(form, setSubmitting) {
-        try {
-            let loginAttempt = await axiosBase.post('/login', form)
-            setLoginErr("")
-            let token = loginAttempt.data.token
-            localStorage.setItem('mjh_user_token', token);
-            let deToken = jwt_decode(token)
 
-            dispatch(storeUser(loginAttempt.data.user))
-            dispatch(successfulLogin(deToken.data.ref))
+    function handleLogin(form, setSubmitting) {
+        login(form)
+            .then(attemptLogin => {
+                if (attemptLogin.success) {
+                    /* Update store with user details and token */
+                    dispatch(storeUser(attemptLogin.user))
+                    dispatch(successfulLogin(attemptLogin.token))
 
-            setDisplay(thisModal, false)
-            setSubmitting(false);
-            setLoggedIn(true);
-        } catch (e) {
-            // console.log(e)
-            if (e.response.data.invalid === 'username') {
-                setLoginErr("Username does not exist")
-            }
-            if (e.response.data.invalid === 'password') {
-                setLoginErr("Invalid password")
-            }
-            setSubmitting(false);
-        }
+                    /* Get user job data and update store */
+                    getUserJobData()
+                        .then(userJobsData => {
+                            dispatch(storeHunts(userJobsData.hunts));
+                            dispatch(storeJobApps(userJobsData.jobs));
+                        })
+                        .catch(e => {
+                            console.log(e);
+                        })
+
+                    /* Reset login modal form */
+                    setLoginErr("")
+                    setSubmitting(false);
+                    setDisplay(thisModal, false)
+
+                    /* Redirect to dashboard */
+                    setLoggedIn(true);
+                } else {
+                    /* Login failed */
+                    setLoginErr(attemptLogin.errorMsg)
+                    setSubmitting(false);
+                }
+            })
+            .catch(e => {
+                console.log(e)
+            })
     }
+
     if (loggedIn) { return <Redirect to="/dashboard" /> }
     return (
         <Modal centered size='lg' show={display} onHide={() => setDisplay(thisModal, false)}>
@@ -59,7 +73,7 @@ function LogIn({ display, setDisplay, changeModal }) {
             <Modal.Body>
                 <Formik initialValues={initialForm} validationSchema={Yup.object(validation)}
                     onSubmit={(values, { setSubmitting }) => {
-                        login(values, setSubmitting);
+                        handleLogin(values, setSubmitting);
                     }} >
                     {({
                         values,

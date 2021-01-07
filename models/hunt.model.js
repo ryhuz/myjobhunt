@@ -6,7 +6,8 @@ const huntSchema = new Schema({
     huntTitle: { type: String, required: true },
     huntDesc: String,
     huntExpire: Date,
-}, { createdAt: 'huntStart' })
+    completed: { type: Boolean, default: false }
+}, { timestamps: { createdAt: "huntStart", updatedAt: false } })
 
 const Hunt = mongoose.model('Hunt', huntSchema);
 module.exports = Hunt;

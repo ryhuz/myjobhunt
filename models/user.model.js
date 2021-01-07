@@ -7,6 +7,7 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     firstname: { type: String, required: true },
     lastname: { type: String, required: true },
+    expiryWarningWeeks: { type: Number, default: 2, min:1, max: 8 }
 })
 
 const User = mongoose.model('User', userSchema);

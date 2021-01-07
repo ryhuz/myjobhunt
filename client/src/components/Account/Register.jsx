@@ -6,9 +6,9 @@ import { storeUser } from '../../app/userDetailSlice'
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap'
 import { Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup';
-import { axiosBase } from '../../https_requests/requests'
 import debounce from 'lodash.debounce';
-import jwt_decode from "jwt-decode";
+import { register, login } from './LoginFunctions';
+import { axiosBase } from '../../https_requests/requests'
 
 function Register({ display, setDisplay, changeModal }) {
     const dispatch = useDispatch();
@@ -54,29 +54,41 @@ function Register({ display, setDisplay, changeModal }) {
         firstname: Yup.string().required().min(2),
         lastname: Yup.string().required().min(2),
     }
-    async function login(form, setSubmitting) {
-        try {
-            let loginAttempt = await axiosBase.post('/login', form)
-            let token = loginAttempt.data.token
-            localStorage.setItem('mjh_user_token', token);
-            let deToken = jwt_decode(token)
 
-            dispatch(storeUser(loginAttempt.data.user))
-            dispatch(successfulLogin(deToken.data.ref))
+    function handleRegister(form, setSubmitting) {
+        register(form)
+            .then(attemptRegister => {
+                if (attemptRegister.success) {
+                    login(form)
+                        .then(attemptLogin => {
+                            if (attemptLogin.success) {
+                                /* Update store with user details and token */
+                                dispatch(storeUser(attemptLogin.user))
+                                dispatch(successfulLogin(attemptLogin.token))
 
-            setDisplay(thisModal, false)
-            setSubmitting(false);
-            setLoggedIn(true);
-        } catch (e) {
-        }
-    }
-    async function register(form, setSubmitting) {
-        try {
-            await axiosBase.post('register', form);
-            login(form, setSubmitting);
-        } catch (e) {
-            console.log(e.response)
-        }
+                                /* Reset register modal form */
+                                setSubmitting(false);
+                                setDisplay(thisModal, false)
+
+                                /* Redirect to dashboard */
+                                setLoggedIn(true);
+                            } else {
+                                /* Login failed */
+                                setSubmitting(false);
+                            }
+                        })
+                        .catch(e => {
+                            console.log(e)
+                        })
+                } else {
+                    /* Whatever if registration failed */
+                    // setSubmitting(false)
+                    // show error message
+                }
+            })
+            .catch(e => {
+                console.log(e)
+            })
     }
 
     if (loggedIn) { return <Redirect to="/dashboard" /> }
@@ -88,7 +100,7 @@ function Register({ display, setDisplay, changeModal }) {
             <Modal.Body>
                 <Formik initialValues={initialForm} validationSchema={Yup.object(validation)}
                     onSubmit={(values, { setSubmitting }) => {
-                        register(values, setSubmitting);
+                        handleRegister(values, setSubmitting);
                     }} >
                     {({
                         values,

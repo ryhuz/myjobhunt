@@ -6,8 +6,9 @@ export const userDetailSlice = createSlice({
         username: "",
         email: "",
         firstname: "",
-        lastname: " ",
+        lastname: "",
         /* other settings */
+        expiryWarningWeeks: 0,
     },
     reducers: {
         storeUser: (state, action) => {

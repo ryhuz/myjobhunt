@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Redirect } from 'react-router-dom';
-import { useSelector, useDispatch, batch } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { successfulLogout, checkLogin } from '../../app/loginSlice'
 import { logoutUser } from '../../app/userDetailSlice'
 

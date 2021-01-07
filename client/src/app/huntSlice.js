@@ -16,16 +16,16 @@ export const huntSlice = createSlice({
             state.jobApplications = action.payload;
             state.found = true;
         },
+        addHunt: (state, action) => {
+            state.hunts.unshift(action.payload);
+        },
     }
 })
 
-export const { storeHunts, storeJobApps } = huntSlice.actions;
+export const { storeHunts, storeJobApps, addHunt } = huntSlice.actions;
 
 export const getHunts = state => state.hunt.hunts;
-export const getJobsInHunt = hunt => state => {
-    let id = hunt._id;
-    let jobs = state.hunt.jobApplications.filter(job => job.inHuntGroup === id );
-    return jobs;
-};
+export const getJobsInHunt = state => state.hunt.jobApplications;
+export const jobsRetrieved = state => state.hunt.found;
 
 export default huntSlice.reducer
