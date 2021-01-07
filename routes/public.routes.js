@@ -78,6 +78,8 @@ router.get("/verify_token", function (req, res, next) {
                 email: user.email,
                 firstname: user.firstname,
                 lastname: user.lastname,
+                /* other settings */
+                expiryWarningWeeks: user.expiryWarningWeeks,
             }
             return res.status(200).json({ status: info.status, user: userDetails })
         } else {

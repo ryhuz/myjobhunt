@@ -12,11 +12,13 @@ export const userDetailSlice = createSlice({
     },
     reducers: {
         storeUser: (state, action) => {
-            let { username, email, firstname, lastname } = action.payload;
+            let { username, email, firstname, lastname, expiryWarningWeeks } = action.payload;
             state.username = username;
             state.email = email;
             state.firstname = firstname;
             state.lastname = lastname;
+            /* other settings */
+            state.expiryWarningWeeks = expiryWarningWeeks;
         },
         logoutUser: (state) => {
             state.username = "";
@@ -36,5 +38,7 @@ export const getName = state => {
     }
     return name;
 }
+
+export const expirySetting = state => state.userDetail.expiryWarningWeeks;
 
 export default userDetailSlice.reducer

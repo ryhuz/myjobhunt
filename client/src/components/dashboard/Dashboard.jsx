@@ -1,24 +1,43 @@
 import React, { useState } from 'react'
 import { Button, Col, Container, Jumbotron, Row } from 'react-bootstrap'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { DateTime, Interval } from "luxon";
 
-import { getName } from '../../app/userDetailSlice'
-import { getHunts, addHunt } from '../../app/huntSlice'
+import { getName, expirySetting } from '../../app/userDetailSlice'
+import { getHunts } from '../../app/huntSlice'
 
 import SideBar from './SideBar';
 import NewHunt from './NewHunt'
 
 function Dashboard() {
-    let dispatch = useDispatch()
     let name = useSelector(getName);
+    let expiry = useSelector(expirySetting)
     let myHunts = useSelector(getHunts);
-
     const [showNewHuntModal, setShowNewHuntModal] = useState(false)
 
+    function convertTime(time, time2 = "") {
+        if (!time2) {
+            return DateTime.fromISO(time).toFormat('LLL yyyy');
+        } else {
+            let from = DateTime.fromISO(time);
+            let to = DateTime.fromISO(time2);
+            let interval = Interval.fromDateTimes(from, to).toDuration().shiftTo('months', 'days').toObject();
+                                    
+            let months = interval.months ? `${interval.months} month${interval.months > 1 ? "s" : ""}` : "";
+            let days = Math.floor(interval.days) ? `${Math.floor(interval.days)} day${Math.floor(interval.days) > 1 ? "s" : ""}` : "";
+            return `${months} ${days}`;
+        }
+    }
+    function expiring(end, exp) {
+        let now = DateTime.local();
+        let ending = DateTime.fromISO(end);
+        let interval = Interval.fromDateTimes(now, ending).toDuration().shiftTo('weeks').toObject()
 
+        return exp > interval.weeks;
 
+    }
     return (
         <>
             <NewHunt show={showNewHuntModal} hide={() => setShowNewHuntModal(false)} />
@@ -44,10 +63,10 @@ function Dashboard() {
                                 <>
                                     {myHunts.map(hunt => (
                                         <Col key={hunt._id} className="p-2">
-                                            <div className="border p-4 hunt-container">
-                                                <div>{hunt.huntTitle}</div>
-                                                <div>{hunt.huntDesc}</div>
-                                                <div>{hunt.huntExpire}</div>
+                                            <div className={`border p-4 hunt-container ${expiring(hunt.huntExpire, expiry) ? "hunt-expiring" : ""}`} >
+                                                <h4>{hunt.huntTitle}</h4>
+                                                <div><span className="small pr-2"><b>Started: </b></span>{convertTime(hunt.huntStart)}</div>
+                                                <div><span className="small pr-2"><b>Ends in: </b></span>{convertTime(hunt.huntStart, hunt.huntExpire)}</div>
                                             </div>
                                         </Col>
                                     ))
