@@ -10,6 +10,7 @@ import { getHunts } from '../../app/huntSlice'
 
 import SideBar from './SideBar';
 import NewHunt from './NewHunt'
+import { NavLink } from 'react-router-dom'
 
 function Dashboard() {
     let name = useSelector(getName);
@@ -24,7 +25,7 @@ function Dashboard() {
             let from = DateTime.fromISO(time);
             let to = DateTime.fromISO(time2);
             let interval = Interval.fromDateTimes(from, to).toDuration().shiftTo('months', 'days').toObject();
-                                    
+
             let months = interval.months ? `${interval.months} month${interval.months > 1 ? "s" : ""}` : "";
             let days = Math.floor(interval.days) ? `${Math.floor(interval.days)} day${Math.floor(interval.days) > 1 ? "s" : ""}` : "";
             return `${months} ${days}`;
@@ -64,16 +65,18 @@ function Dashboard() {
                                     {myHunts.map(hunt => (
                                         <Col key={hunt._id} className="p-2">
                                             <div className={`border p-4 hunt-container ${expiring(hunt.huntExpire, expiry) ? "hunt-expiring" : ""}`} >
-                                                <h4>{hunt.huntTitle}</h4>
-                                                <div><span className="small pr-2"><b>Started: </b></span>{convertTime(hunt.huntStart)}</div>
-                                                <div><span className="small pr-2"><b>Ends in: </b></span>{convertTime(hunt.huntStart, hunt.huntExpire)}</div>
+                                                <NavLink to={`/hunt/${hunt._id}`}>
+                                                    <h4>{hunt.huntTitle}</h4>
+                                                    <div><span className="small pr-2"><b>Started: </b></span>{convertTime(hunt.huntStart)}</div>
+                                                    <div><span className="small pr-2"><b>Ends in: </b></span>{convertTime(hunt.huntStart, hunt.huntExpire)}</div>
+                                                </NavLink>
                                             </div>
                                         </Col>
                                     ))
                                     }
                                 </>
                                 :
-                                <Col className="p-3">
+                                <Col className="p-2">
                                     <div className="border p-4 hunt-container">
                                         <div>No ongoing hunts.</div><div>Why not create one to get started?</div>
                                     </div>

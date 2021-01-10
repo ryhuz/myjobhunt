@@ -34,13 +34,23 @@ code {
 }
 .hunt-container:hover {
   box-shadow: 0px 0px 10px 3px rgba(65, 59, 59, 0.521);
+  background-color: rgba(163, 163, 163, 0.24);
   cursor: pointer;
 }
 
-.hunt-container.hunt-expiring {
-  border-color: rgb(218, 65, 65) !important;
+.border.hunt-container.hunt-expiring {
+  background-color: rgba(233, 102, 102, 0.24);
+  /* border-color: rgb(218, 65, 65) !important; */
 }
 
 .hunt-container.hunt-expiring:hover {
+  background-color: rgba(221, 158, 158, 0.24);
   box-shadow: 0px 0px 10px 3px rgba(190, 51, 51, 0.521);
+}
+
+.hunt-container a, .hunt-container a:hover{
+  color: #212529; 
+}
+.hunt-container a:hover{
+  text-decoration: none;
 }

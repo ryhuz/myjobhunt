@@ -11,6 +11,7 @@ import Home from './components/Home/Home';
 import Dashboard from './components/dashboard/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import LogOut from './components/Account/LogOut';
+import Hunt from './components/Hunts/Hunt';
 
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
       </Route>
 
       <PrivateRoute path="/dashboard" component={Dashboard} />
+      <PrivateRoute path="/hunt/:id" component={Hunt} />
       <PrivateRoute path="/logout" component={LogOut} />
     </BrowserRouter>
   )

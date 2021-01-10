@@ -25,7 +25,6 @@ export const huntSlice = createSlice({
 export const { storeHunts, storeJobApps, addHunt } = huntSlice.actions;
 
 export const getHunts = state => state.hunt.hunts;
-export const getJobsInHunt = state => state.hunt.jobApplications;
 export const jobsRetrieved = state => state.hunt.found;
 
 export default huntSlice.reducer
